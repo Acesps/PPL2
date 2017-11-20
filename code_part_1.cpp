@@ -102,16 +102,22 @@ void removing_definations(){
 			i++;
 		}
 	}
-
 	for(int i=0;i<row_count_dec;){
 		int n = strlen(all_declaration[i]);
-		char check[5];
+		char check[6];
 		int m=0;
 		for(int k=0;k<n && k<5;k++){
 			check[m++]=all_declaration[i][k];
 		}
-		if(strcmp(check,"array")==0){
-			//cout<<all_declaration[i]<<endl;
+		int flag=1;
+		string str="array";
+		for(int k=0;k<5;k++){
+			if(check[k]!=str[k]){
+				flag=0;
+				break;
+			}
+		}
+		if(flag){
 			strcpy(array_defination[row_count_array++],all_declaration[i]);
 			for(int k=i;k<row_count_dec-1;k++){
 				strcpy(all_declaration[k],all_declaration[k+1]);
@@ -190,9 +196,13 @@ void create_from_defination(){
 			tabel[tabel_count].declared_with[0]=tabel_count_initial;
 			tabel[tabel_count].declared_with[1]=tabel_count_initial+variable_count;
 			tabel_count++;
-			auto it = find (myvector.begin(), myvector.end(), 30);
-  			if (it == myvector.end())
- 				datatypes.push_back(data);
+			vector<string>::iterator it;
+			it = find(datatypes.begin(),datatypes.end(),data);
+			if(it == datatypes.end()){
+				datatypes.push_back(data);
+			}
+		}
+
 	}
 }
 void create_from_array_defination(){
@@ -217,7 +227,7 @@ void create_from_array_defination(){
 		}
 		if(j==p){
 			tabel[tabel_count].datatype="array<int>";
-			tabel[tabel_count].variable_name="^s";
+			tabel[tabel_count].variable_name="s";
 			//cout<<tabel[tabel_count].datatype<<"##"<<endl;
 			tabel[tabel_count].struct_or_not=0;
 			tabel[tabel_count].array_or_not = 1;
@@ -272,9 +282,14 @@ void create_from_array_defination(){
 			tabel[tabel_count].declared_with[0]=tabel_count_initial;
 			tabel[tabel_count].declared_with[1]=tabel_count_initial+variable_count;
 			tabel_count++;
-			auto it = find (myvector.begin(), myvector.end(), 30);
-  			if (it == myvector.end())
- 				datatypes.push_back(data);
+			string u;
+			u=data + to_string(up_limit);
+
+			vector<string>::iterator it;
+			it = find(datatypes.begin(),datatypes.end(),u);
+			if(it == datatypes.end()){
+				datatypes.push_back(u);
+			}
 
 		}
 	}
@@ -370,40 +385,55 @@ void print_definations(){
 	}
 }
 
+int check_structural_equivalence(string str1,string str2,vector<vector<bool> > &truth_table){
+	int it1 = find(datatypes.begin(),datatypes.end(),str1) - datatypes.begin();
+	int it2 = find(datatypes.begin(),datatypes.end(),str2) - datatypes.begin();
+	if(it1 == datatypes.size() || it2 == datatypes.size()){
+		return str1 == str2 ;
+	}
+	return truth_table[it1][it2];
+}
 void structural_equivalence(vector<vector<bool> > &truth_table){
 	int flag=1;
 	while(flag){
 		flag=0;
-		for(int i=0;i<tabel_count;i++){
-			for(int j=i+1;j<tabel_count;j++)
+		for(int i=0;i<datatypes.size();i++){
+			for(int j=i+1;j<datatypes.size();j++)
 				if(truth_table[i][j]){	
-					if(tabel[i].array_or_not==1 && tabel[j].array_or_not==1)
-					{
-						if(tabel[i].array_top==tabel[j].array_top){
+					int len_i= datatypes[i].size();
+					int len_j= datatypes[j].size();
+					if(datatypes[i].substr(0,min(5,len_i))=="array" && datatypes[j].substr(0,min(5,len_j))=="array")
+					{	
+						int it_i = datatypes[i].find(">");
+						int it_j = datatypes[j].find(">");
+						if(datatypes[i].substr(it_i) == datatypes[i].substr(it_j)){
 							continue;
 						}
 					}
-					else if(tabel[i].datatype==tabel[j].datatype){
+					else if(datatypes[i]==datatypes[j]){
 						continue;
 					}
-					else if(tabel[i].struct_or_not==1 && tabel[j].struct_or_not==1){
+					else if(datatypes[i].find("struct") !=  string::npos && datatypes[j].find("struct") !=  string::npos){
 						for(int k=0;k<structures[0].size() && k < structures[1].size();k++){
-							if(structures[0][k]!=structures[1][k]){
+							if(check_structural_equivalence(structures[0][k],structures[1][k],truth_table) == 0){
 								truth_table[i][j]=false;
 								truth_table[j][i]=false;
 								flag=1;
+								break;
 							}
 						}
 						continue;				
 					}
-					int index1=0,index2=0;
+					//checking for datatype in symbol table
+
+					int index1 = 0,index2 = 0;
 					int flag2=0;
 					for(int k=0;k<tabel_count;k++){
-						if(tabel[i].datatype==tabel[k].variable_name){
+						if(datatypes[i]==tabel[k].variable_name){
 							index1=k;
 							flag2++;
 						}
-						if(tabel[j].datatype==tabel[k].variable_name){
+						if(datatypes[i]==tabel[k].variable_name){
 							index2=k;
 							flag2++;
 						}
@@ -412,6 +442,7 @@ void structural_equivalence(vector<vector<bool> > &truth_table){
 					if(flag2==2 && tabel[index2].datatype==tabel[index1].datatype){
 						continue;
 					}
+					//they are different types
 					truth_table[i][j]=false;
 					truth_table[j][i]=false;
 					flag=1;
@@ -446,10 +477,13 @@ int main(){
 		//print_definations();
 		//display(all_declaration,row_count_dec);
 		create_symbol_tabel();
+		//cout<<array_defination;
 		//print_symboltabel();
-		vector<vector<bool> >truth_table(datatypes,vector<bool>(tabel_count,true) );
+		//cout<<datatypes;
+		vector<vector<bool> >truth_table(datatypes.size(),vector<bool>(datatypes.size(),true) );
 		structural_equivalence(truth_table);
 		FILE *f;
+
 	    size_t nwritten;
 
 	    f = fopen("./output/Symbol_table","wb");
@@ -460,7 +494,7 @@ int main(){
 	      exit(1);
 	    }
 
-	    nwritten = fwrite((void *)tabel, sizeof tabel, 1, f);
+	    nwritten = fwrite(tabel, sizeof tabel, 1, f);
 	    fclose(f);
 
 	    if (nwritten < 1)
@@ -471,7 +505,7 @@ int main(){
 	    FILE *f2;
 	    size_t nwritten2;
 
-	    f2 = fopen("./output/Symbol_table","wb");
+	    f2 = fopen("./output/truth_table","wb");
 
 	    if (f2 == NULL)
 	    {
@@ -479,23 +513,43 @@ int main(){
 	      exit(1);
 	    }
 
-	    nwritten2 = fwrite(truth_table, sizeof tabel, 1, f2);
+	    nwritten2 = fwrite(&truth_table, sizeof tabel, 1, f2);
 	    fclose(f2);
 
-	    if (nwritten < 1)
+	    if (nwritten2 < 1)
 	    {
 	      fprintf(stderr, "Writing to file failed.\n");
 	      exit(1);
 	    }
 
+	    FILE *f3;
+	    size_t nwritten3;
 
+	    f3 = fopen("./output/datatypes","wb");
 
+	    if (f3 == NULL)
+	    {
+	      fprintf(stderr, "Cannot open file for writing.\n");
+	      exit(1);
+	    }
+
+	    nwritten3 = fwrite(&datatypes, sizeof datatypes, 1, f3);
+	    fclose(f3);
+
+	    if (nwritten3 < 1)
+	    {
+	      fprintf(stderr, "Writing to file failed.\n");
+	      exit(1);
+	    }
+
+	    
 		string one,two;
 		cout<<truth_table;
 		cout<<"Enter Variables to be checked:\n";
 		cin>>one>>two;
 		name_equvalence(one,two);
 		internalname_equivalence(one,two);
+
 	}
 	return 0;
 }
