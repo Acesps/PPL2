@@ -2,8 +2,9 @@ int a,b;
 int c;
 float x,y;
 float z;
-int array[0-4] q,r;
-int array[0-4] s;
+array<int> ^p = gcnew array<int> (3);
+array<int> ^q = gcnew array<int> (3);
+array<int> ^s=^q;
 struct foo{
 	int h;
 	string i;
@@ -14,3 +15,7 @@ struct cat{
 };
 struct foo aa,bb;
 struct cat cc;
+typedef int new_int;
+typedef int new_int2;
+new_int j,k;
+new_int2 l;

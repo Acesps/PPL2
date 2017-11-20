@@ -1,0 +1,4 @@
+1. Name equivalence is used for basic data types.
+2. Structural equivalence is used for structures.
+3. Name equivalence is used for arrays.
+ 
