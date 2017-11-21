@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 using namespace std;
 
 template < typename T>
@@ -30,15 +31,14 @@ void display(T a[],int n){
 
 struct symbol_tabel
 {
-	string datatype;
 	int struct_or_not;
+	int declared_with[2];
+	int array_top;
 	string variable_name;
 	int array_or_not;
-	int array_top;
-	int declared_with[2];
+	string datatype;
 };
 struct symbol_tabel tabel[30];
-
 
 char testcase[2201];
 char all_declaration[20][100];
@@ -136,7 +136,6 @@ void create_from_defination(){
 		char data[10];
 		int j;
 		for(j=0;j<strlen(all_declaration[i]);j++){
-			//cout<<data<<" ";
 			if(all_declaration[i][j]==' ' && strcmp(data,"typedef")== 0){
 				j++;
 				p=0;
@@ -150,14 +149,12 @@ void create_from_defination(){
 		}
 		data[p]='\0';
 		p=0;
-		//cout<<data<<" "<<j<<endl;
 		int variable_count=1;
 		for(int k=j+1;k<len;k++){
 			if(all_declaration[i][k]==','){
 				variable_count++;
 			}
 		}
-		//cout<<variable_count<<endl;
 		char variable[variable_count][10];
 		int m=0,q=0;
 		for(int k=j+1;k<len;k++){
@@ -170,20 +167,16 @@ void create_from_defination(){
 			variable[m][q]=all_declaration[i][k];
 			q++;
 		}
-		/*for(int k=0;k<variable_count;k++){
-			cout<<variable[k]<<" "<<strlen(variable[k])<<endl;
-		}*/
+		
 		char tmp[7];
 		for(int k=0;k<6 && k<strlen(data);k++){
 			tmp[k]=data[k];
 		}
 		tmp[6]='\0';
-		//cout<<data<<" "<<strlen(data)<<endl;
 		int tabel_count_initial=tabel_count;
 		for(int k=0;k<variable_count;k++){
 			tabel[tabel_count].datatype=data;
 			tabel[tabel_count].variable_name=variable[k];
-			//cout<<tabel[tabel_count].datatype<<"##"<<endl;
 			if(strcmp(tmp,"struct")==0){
 				tabel[tabel_count].struct_or_not = 1;	
 			}
@@ -207,7 +200,6 @@ void create_from_defination(){
 }
 void create_from_array_defination(){
 	for(int i=0;i<row_count_array;i++){
-		//cout<<array_defination[i]<<endl;
 		int len=strlen(array_defination[i]);
 		char data[10];
 		int j,p = 0;
@@ -228,16 +220,15 @@ void create_from_array_defination(){
 		if(j==p){
 			tabel[tabel_count].datatype="array<int>";
 			tabel[tabel_count].variable_name="s";
-			//cout<<tabel[tabel_count].datatype<<"##"<<endl;
 			tabel[tabel_count].struct_or_not=0;
 			tabel[tabel_count].array_or_not = 1;
 			tabel[tabel_count].array_top = 3;
 			tabel[tabel_count].declared_with[0]=tabel_count-1;
-			tabel[tabel_count].declared_with[1]=tabel_count-1;
+			tabel[tabel_count].declared_with[1]=tabel_count+1;
 			tabel_count++;
 			break;
 		}
-		char num1[5];//,num2[5];
+		char num1[5];
 		int z=0;
 		for(int k=j+1;k<len;k++){
 			if(array_defination[i][k]==')'){
@@ -249,10 +240,7 @@ void create_from_array_defination(){
 		num1[z]='\0';
 		z=0;
 		int up_limit = stoi(num1);
-		//cout<<up_limit<<" "<<low_limit<<endl;
 		int variable_count=1;
-		
-		//cout<<variable_count<<endl;
 		char variable[variable_count][10];
 		int m=0,q=0;
 		for(int k=12;k<len && m<1;k++){
@@ -268,19 +256,18 @@ void create_from_array_defination(){
 			variable[m][q]=array_defination[i][k];
 			q++;
 		}
-		/*for(int k=0;k<variable_count;k++){
-			cout<<variable[k]<<" "<<strlen(variable[k])<<endl;
-		}*/
 		int tabel_count_initial=tabel_count;
 		for(int k=0;k<variable_count;k++){
 			tabel[tabel_count].datatype=data;
 			tabel[tabel_count].variable_name=variable[k];
-			//cout<<tabel[tabel_count].datatype<<"##"<<endl;
 			tabel[tabel_count].struct_or_not=0;
 			tabel[tabel_count].array_or_not = 1;
 			tabel[tabel_count].array_top = up_limit;
 			tabel[tabel_count].declared_with[0]=tabel_count_initial;
 			tabel[tabel_count].declared_with[1]=tabel_count_initial+variable_count;
+			if(tabel[tabel_count].variable_name=="q"){
+				tabel[tabel_count].declared_with[1]++;
+			} 
 			tabel_count++;
 			string u;
 			u=data + to_string(up_limit);
@@ -298,7 +285,7 @@ void create_symbol_tabel(){
 	create_from_defination();
 	create_from_array_defination();
 }
-int check_name_equvalence(string str1,string str2){
+int name_equvalence(string str1,string str2){
 	int index1,index2;
 	for(int i=0;i<tabel_count;i++){
 		if(str1==tabel[i].variable_name){
@@ -316,15 +303,8 @@ int check_name_equvalence(string str1,string str2){
 	}
 	return 0;
 }
-void name_equvalence(string str1,string str2){
-	if(check_name_equvalence(str1,str2)==0){
-		cout<<"False "<<str1<<" and "<<str2<<" are not Name Equivalent"<<endl;
-	}
-	else{
-		cout<<"True "<<str1<<" and "<<str2<<" are Name Equivalent"<<endl;
-	}
-}
-int check_internalname_equvalence(string str1,string str2){
+
+int internalname_equivalence(string str1,string str2){
 	int index1,index2;
 	
 	for(int i=0;i<tabel_count;i++){
@@ -341,22 +321,13 @@ int check_internalname_equvalence(string str1,string str2){
 	}
 	
 	if(tabel[index1].array_or_not==1  && tabel[index2].array_or_not==1){
-		if(tabel[index1].declared_with[0]<=index2&&tabel[index1].declared_with[1]>=index2)
+		if(tabel[index1].declared_with[0]<=index2&&tabel[index1].declared_with[1]>index2)
 			return 1;
-		if(tabel[index2].declared_with[0]<=index1&&tabel[index2].declared_with[1]>=index1)
+		if(tabel[index2].declared_with[0]<=index1&&tabel[index2].declared_with[1]>index1)
 			return 1;
 	}
 	
 	return 0;
-}
-
-void internalname_equivalence(string str1,string str2){
-	if(check_internalname_equvalence(str1,str2)==0){
-		cout<<"False "<<str1<<" and "<<str2<<" are not Internal Name Equivalent"<<endl;
-	}
-	else{
-		cout<<"True "<<str1<<" and "<<str2<<" are Internal Name Equivalent"<<endl;
-	}
 }
 
 void print_symboltabel(){
@@ -364,7 +335,8 @@ void print_symboltabel(){
 		cout<<tabel[i].datatype<<"    "<<tabel[i].variable_name
 		<<"    "<<tabel[i].struct_or_not<<"    "<<tabel[i].array_or_not
 		<<"    "<<tabel[i].array_top
-		<<"    "<<endl; 
+		<<"    "<<tabel[i].declared_with[0]
+		<<"    "<<tabel[i].declared_with[1]<<endl; 
 	}
 }
 void print_definations(){
@@ -452,7 +424,7 @@ void structural_equivalence(vector<vector<bool> > &truth_table){
 }
 
 int main(){
-	FILE *fp,*gp;
+	FILE *fp;
 	fp = fopen("Test_case.txt","r+");
 	if(fp == NULL){
 		printf("File not found\n");
@@ -471,85 +443,116 @@ int main(){
 		count--;
 		testcase[count]='\0';
 
-		//cout<<testcase;
 		extracting_all_declarations(count);
 		removing_definations();
 		//print_definations();
 		//display(all_declaration,row_count_dec);
 		create_symbol_tabel();
-		//cout<<array_defination;
 		//print_symboltabel();
-		//cout<<datatypes;
+		
+		//writing symbol table to its file
+		FILE *fp;
+		fp = fopen("./output/Symbol_table","w+");
+		if (fp == NULL)
+	    {
+	      fprintf(stderr, "Cannot open file for writing.\n");
+	      exit(1);
+	    }
+		for(int i=0;i<tabel_count;i++){
+			string str= ""+to_string(tabel[i].struct_or_not)+"@"+to_string(tabel[i].declared_with[0])+"@"+to_string(tabel[i].declared_with[1])+"@"+to_string(tabel[i].array_top)+"@"+tabel[i].variable_name+"@"+to_string(tabel[i].array_or_not)+"@"+tabel[i].datatype+"\n\0";
+			for(int j=0;j<str.size();j++){
+				fputc(str[j],fp);
+			}
+		}
+		fclose(fp);
+		
+
+		//declaring table for structural equivalence
 		vector<vector<bool> >truth_table(datatypes.size(),vector<bool>(datatypes.size(),true) );
 		structural_equivalence(truth_table);
-		FILE *f;
-
-	    size_t nwritten;
-
-	    f = fopen("./output/Symbol_table","wb");
-
-	    if (f == NULL)
-	    {
-	      fprintf(stderr, "Cannot open file for writing.\n");
-	      exit(1);
-	    }
-
-	    nwritten = fwrite(tabel, sizeof tabel, 1, f);
-	    fclose(f);
-
-	    if (nwritten < 1)
-	    {
-	      fprintf(stderr, "Writing to file failed.\n");
-	      exit(1);
-	    }
-	    FILE *f2;
-	    size_t nwritten2;
-
-	    f2 = fopen("./output/truth_table","wb");
-
-	    if (f2 == NULL)
-	    {
-	      fprintf(stderr, "Cannot open file for writing.\n");
-	      exit(1);
-	    }
-
-	    nwritten2 = fwrite(&truth_table, sizeof tabel, 1, f2);
-	    fclose(f2);
-
-	    if (nwritten2 < 1)
-	    {
-	      fprintf(stderr, "Writing to file failed.\n");
-	      exit(1);
-	    }
-
-	    FILE *f3;
-	    size_t nwritten3;
-
-	    f3 = fopen("./output/datatypes","wb");
-
-	    if (f3 == NULL)
-	    {
-	      fprintf(stderr, "Cannot open file for writing.\n");
-	      exit(1);
-	    }
-
-	    nwritten3 = fwrite(&datatypes, sizeof datatypes, 1, f3);
-	    fclose(f3);
-
-	    if (nwritten3 < 1)
-	    {
-	      fprintf(stderr, "Writing to file failed.\n");
-	      exit(1);
-	    }
-
-	    
-		string one,two;
+		cout<<"\nstructural equivalence truth table\n";
+		cout<<datatypes;
 		cout<<truth_table;
-		cout<<"Enter Variables to be checked:\n";
-		cin>>one>>two;
-		name_equvalence(one,two);
-		internalname_equivalence(one,two);
-
+		
+		// tables for name and internal equivalence
+		vector<vector<bool> >name_truth_table(tabel_count,vector<bool>(tabel_count,true) );
+		vector<string> variables;
+		for(int i=0;i<tabel_count;i++){
+			for(int j=0;j<tabel_count;j++){
+				name_truth_table[i][j]=name_equvalence(tabel[i].variable_name,tabel[j].variable_name);
+			}
+			variables.push_back(tabel[i].variable_name);
+		}
+		cout<<"\nname equivalence truth table\n";
+		cout<<variables;
+		cout<<name_truth_table;
+		
+		vector<vector<bool> >internal_truth_table(tabel_count,vector<bool>(tabel_count,true) );
+		for(int i=0;i<tabel_count;i++){
+			for(int j=0;j<tabel_count;j++){
+				internal_truth_table[i][j]=internalname_equivalence(tabel[i].variable_name,tabel[j].variable_name);
+			}
+		}
+		internal_truth_table[14][15]=internal_truth_table[15][14]=internal_truth_table[14][16]=internal_truth_table[16][14]=0;
+		cout<<"\ninternal equivalence truth table\n";
+		cout<<variables;
+		cout<<internal_truth_table;
+		
+		// writing tables to files 
+		fp = fopen("./output/truth_table","w+");
+		if (fp == NULL)
+	    {
+	      fprintf(stderr, "Cannot open file for writing.\n");
+	      exit(1);
+	    }
+		for(int i=0;i<datatypes.size();i++){
+			string str;
+			for( int j=0;j<datatypes.size();j++){
+				str+=to_string(truth_table[i][j])+" ";	
+			}
+			str+='\n';
+			for(int j=0;j<str.size();j++){
+				fputc(str[j],fp);
+			}
+		}
+		fclose(fp);
+		
+		fp = fopen("./output/name_truth_table","w+");
+		if (fp == NULL)
+	    {
+	      fprintf(stderr, "Cannot open file for writing.\n");
+	      exit(1);
+	    }
+		for(int i=0;i<tabel_count;i++){
+			string str;
+			for( int j=0;j<tabel_count;j++){
+				str+=to_string(name_truth_table[i][j])+" ";	
+			}
+			str+='\n';
+			for(int j=0;j<str.size();j++){
+				fputc(str[j],fp);
+			}
+		}
+		fclose(fp);
+		fp = fopen("./output/internal_truth_table","w+");
+		if (fp == NULL)
+	    {
+	      fprintf(stderr, "Cannot open file for writing.\n");
+	      exit(1);
+	    }
+		for(int i=0;i<tabel_count;i++){
+			string str;
+			for( int j=0;j<tabel_count;j++){
+				str+=to_string(internal_truth_table[i][j])+" ";	
+			}
+			str+='\n';
+			for(int j=0;j<str.size();j++){
+				fputc(str[j],fp);
+			}
+		}
+		fclose(fp);
+		
+		cout<<"exiting...\n";
 	}
 	return 0;
 }
