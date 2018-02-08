@@ -4,6 +4,7 @@ float x,y;
 float z;
 array<int> ^p = gcnew array<int> (3);
 array<int> ^q = gcnew array<int> (3);
+array<int> ^abc = gcnew array<int> (4);
 array<int> ^s=^q;
 struct foo{
 	int h;
@@ -19,3 +20,8 @@ typedef int new_int;
 typedef int new_int2;
 new_int j,k;
 new_int2 l;
+struct foo1{
+	int h;
+	string i;
+	char za;
+};

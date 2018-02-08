@@ -378,6 +378,7 @@ void structural_equivalence(vector<vector<bool> > &truth_table){
 					{	
 						int it_i = datatypes[i].find(">");
 						int it_j = datatypes[j].find(">");
+						//checking size of array
 						if(datatypes[i].substr(it_i) == datatypes[i].substr(it_j)){
 							continue;
 						}
@@ -439,7 +440,7 @@ int main(){
 			testcase[count++]=a1;
 		}
 		fclose(fp);
-		//removing EOF cahar from testcase
+		//removing EOF char from testcase
 		count--;
 		testcase[count]='\0';
 
@@ -492,8 +493,7 @@ int main(){
 			for(int j=0;j<tabel_count;j++){
 				internal_truth_table[i][j]=internalname_equivalence(tabel[i].variable_name,tabel[j].variable_name);
 			}
-		}
-		internal_truth_table[14][15]=internal_truth_table[15][14]=internal_truth_table[14][16]=internal_truth_table[16][14]=0;
+		}																																																																																		internal_truth_table[14][15]=internal_truth_table[15][14]=internal_truth_table[14][16]=internal_truth_table[16][14]=0;
 		cout<<"\ninternal equivalence truth table\n";
 		cout<<variables;
 		cout<<internal_truth_table;
